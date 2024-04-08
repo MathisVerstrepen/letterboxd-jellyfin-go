@@ -1,0 +1,33 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Executables
+*.exe
+*.out
+
+# Go binary
+/bin/
+
+# Go build cache and test cache
+/.cache/
+/.testcache/
+
+# Go test output
+/test_output/
+
+# Dependency directories (vendoring)
+/vendor/
+/Godeps/
+
+# IDE specific files
+.idea/
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables file
+.env

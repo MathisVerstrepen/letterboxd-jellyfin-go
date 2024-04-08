@@ -1,0 +1,20 @@
+{
+    "Users": [
+        { "Username": "Mathis_V", "LatestWatchlistMovie": "207" },
+        { "Username": "Nimportnawak_", "LatestWatchlistMovie": "16391" },
+        { "Username": "arkc0s", "LatestWatchlistMovie": "" }
+    ],
+    "Proxy": "192.168.2.51:1080",
+    "CollectionIds" : {
+        "Mathis_V" : "e88a35853226fa5bc6af39a1c29bfc09",
+        "Nimportnawak_" : "d3d247b39b044e916fdc7e46d922d514",
+        "arkc0s": "2db0f54db32a66ec41af0d3d11616e0e",
+        "directors" : "af6bd65fc924d6b0e4438df060467e8f"
+    },
+    "RadarrRootPaths" : {
+        "movies" : "/data/complete/movies",
+        "series" : "/data/complete/tv",
+        "anime_movies" : "/data/complete/anime_movies",
+        "anime_series" : "/data/complete/anime_tv"
+    }
+}
