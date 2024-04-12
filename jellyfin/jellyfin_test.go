@@ -1,13 +1,25 @@
 package jellyfin
 
 import (
-	"fmt"
+	"encoding/json"
 	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/mock"
+
+	f "diikstra.fr/letterboxd-jellyfin-go/fetch"
 )
+
+type MockClient struct {
+	mock.Mock
+}
+
+func (m *MockClient) FetchData(fp f.FetcherParams) []byte {
+	args := m.Called(fp.Url)
+	return args.Get(0).([]byte)
+}
 
 // Get info of the current directory of the executed file
 var (
@@ -86,63 +98,126 @@ func TestGetUserId(t *testing.T) {
 }
 
 func TestGetUserViews(t *testing.T) {
+	mockClient := new(MockClient)
 	initTestEnvironnement(t)
+
+	testData1 := []UserView{{
+		Name: "testMovie",
+		Id:   "testId",
+		UserData: UserData{
+			Played: false,
+		},
+	}, {
+		Name: "testMovie2",
+		Id:   "testId2",
+		UserData: UserData{
+			Played: true,
+		},
+	}}
+	byteTestData_1, _ := json.Marshal(ReqUserViewWrapper{
+		Items: testData1})
+
+	byteTestData_2, _ := json.Marshal(struct {
+		FalseField string
+	}{
+		FalseField: "testFalseJsonFormat",
+	})
 
 	type args struct {
 		userId           string
 		userCollectionId string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name           string
+		args           args
+		wantErr        bool
+		want           []UserView
+		clientResponse []byte
 	}{
 		{
-			name: "test1",
+			name: "Test with one played movie",
 			args: args{
-				userId:           "642e94dd14cb4045b31cf67a36ce998f",
-				userCollectionId: "e88a35853226fa5bc6af39a1c29bfc09",
+				userId:           "exampleUserId",
+				userCollectionId: "exampleUserCollectionId",
 			},
-			wantErr: false,
+			wantErr:        false,
+			want:           testData1,
+			clientResponse: byteTestData_1,
+		},
+		{
+			name: "Test with error from wrong json response",
+			args: args{
+				userId:           "exampleUserId",
+				userCollectionId: "exampleUserCollectionId",
+			},
+			wantErr:        true,
+			want:           testData1,
+			clientResponse: byteTestData_2,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetUserViews(tt.args.userId, tt.args.userCollectionId)
+			mockClient.On("FetchData", mock.Anything).Return(tt.clientResponse, nil)
+			got, err := GetUserViews(mockClient, tt.args.userId, tt.args.userCollectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUserViews() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			fmt.Println(got)
+			for index, gotItem := range got {
+				if gotItem != tt.want[index] {
+					t.Errorf("GetUserViews() error = %v, want %v", got, tt.want)
+				}
+			}
 		})
 	}
 }
 
 func Test_removeSeenMoviesFromUserCollection(t *testing.T) {
+	mockClient := new(MockClient)
 	initTestEnvironnement(t)
+
+	byteTestData_1, _ := json.Marshal(ReqUserViewWrapper{
+		Items: []UserView{{
+			Name: "testMovie",
+			Id:   "testId",
+			UserData: UserData{
+				Played: false,
+			},
+		}, {
+			Name: "testMovie2",
+			Id:   "testId2",
+			UserData: UserData{
+				Played: true,
+			},
+		}},
+	})
 
 	type args struct {
 		userId           string
 		userCollectionId string
 	}
 	tests := []struct {
-		name string
-		args args
-		want int
+		name           string
+		args           args
+		want           int
+		clientResponse []byte
 	}{
 		{
-			name: "test1",
+			name: "Test with one played movie",
 			args: args{
-				userId:           "642e94dd14cb4045b31cf67a36ce998f",
-				userCollectionId: "e88a35853226fa5bc6af39a1c29bfc09",
+				userId:           "exampleUserId",
+				userCollectionId: "exampleUserCollectionId",
 			},
-			want: 0,
+			want:           1,
+			clientResponse: byteTestData_1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := removeSeenMoviesFromUserCollection(tt.args.userId, tt.args.userCollectionId); got != tt.want {
-				t.Errorf("removeSeenMoviesFromUserCollection() = %v, want %v", got, tt.want)
+			mockClient.On("FetchData", mock.Anything).Return(tt.clientResponse, nil)
+			if got := removeSeenMoviesFromUserCollection(mockClient, tt.args.userId, tt.args.userCollectionId); got != tt.want {
+				t.Errorf("removeSeenMoviesFromUserCollection() error = %v, want %v", got, tt.want)
 			}
 		})
 	}

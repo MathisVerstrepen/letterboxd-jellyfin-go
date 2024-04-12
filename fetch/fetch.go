@@ -20,6 +20,10 @@ type FetcherParams struct {
 	Params  Param
 }
 
+type FetcherClient interface {
+	FetchData(fp FetcherParams) []byte
+}
+
 func Fetcher(fp FetcherParams) []byte {
 	client := &http.Client{}
 

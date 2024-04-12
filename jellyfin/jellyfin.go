@@ -67,8 +67,8 @@ type ReqUserViewWrapper struct {
 	Items []UserView
 }
 
-func GetUserViews(userId string, userCollectionId string) ([]UserView, error) {
-	body := f.Fetcher(f.FetcherParams{
+func GetUserViews(client f.FetcherClient, userId string, userCollectionId string) ([]UserView, error) {
+	body := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    JellyfinUrl + "Items",
 		Body:   nil,
@@ -91,8 +91,8 @@ func GetUserViews(userId string, userCollectionId string) ([]UserView, error) {
 	return userView.Items, nil
 }
 
-func removeSeenMoviesFromUserCollection(userId string, userCollectionId string) int {
-	userViews, err := GetUserViews(userId, userCollectionId)
+func removeSeenMoviesFromUserCollection(client f.FetcherClient, userId string, userCollectionId string) int {
+	userViews, err := GetUserViews(client, userId, userCollectionId)
 	numberOfMoviesRemoved := 0
 
 	if err != nil {
@@ -103,7 +103,7 @@ func removeSeenMoviesFromUserCollection(userId string, userCollectionId string) 
 	for _, movie := range userViews {
 		if movie.UserData.Played {
 			log.Printf("Deleting %s of user %s from collection %s\n", movie.Name, userId, userCollectionId)
-			body := f.Fetcher(f.FetcherParams{
+			body := client.FetchData(f.FetcherParams{
 				Method: "DELETE",
 				Url:    JellyfinUrl + "Collections/" + userCollectionId + "/Items",
 				Body:   nil,
