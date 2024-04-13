@@ -7,7 +7,10 @@ import (
 	"github.com/joho/godotenv"
 
 	"diikstra.fr/letterboxd-jellyfin-go/config"
+	f "diikstra.fr/letterboxd-jellyfin-go/fetch"
+	jf "diikstra.fr/letterboxd-jellyfin-go/jellyfin"
 	lt "diikstra.fr/letterboxd-jellyfin-go/letterboxd"
+	rd "diikstra.fr/letterboxd-jellyfin-go/radarr"
 )
 
 func main() {
@@ -19,15 +22,25 @@ func main() {
 	conf := config.LoadConfiguration()
 	fmt.Println(conf)
 
-	f := lt.Fetcher{
+	fetcher := f.Fetcher{
 		ProxyUrl: conf.Proxy,
+	}
+	letterboxdScrapper := lt.LetterboxdScrapper{
+		Client: fetcher,
 	}
 
 	for index := range conf.Users {
 		fmt.Println(conf.Users[index].Username)
-		tmdbIds, _ := f.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
+		tmdbIds, _ := letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
 		fmt.Println(tmdbIds)
 
+		rd.SendTmdbIDsToRadarr(fetcher, tmdbIds, &conf)
+
+		userId, err := jf.GetUserId(fetcher, conf.Users[index].JellyfinUserName)
+		if err != nil {
+			log.Fatalf("No user matching in Jellyfin found for %s", conf.Users[index].JellyfinUserName)
+		}
+		jf.RemoveSeenMoviesFromUserCollection(fetcher, userId, conf.Users[index].CollectionId)
 	}
 
 	fmt.Println(conf)

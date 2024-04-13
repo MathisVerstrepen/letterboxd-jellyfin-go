@@ -38,8 +38,8 @@ type RadarrStatus struct {
 	IsAnimation    bool
 }
 
-func GetRadarrState(tmdbId string) RadarrStatus {
-	body := f.Fetcher(f.FetcherParams{
+func GetRadarrState(client f.FetcherClient, tmdbId string) RadarrStatus {
+	body := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    RadarrUrl + "movie/lookup",
 		Body:   nil,
@@ -50,8 +50,6 @@ func GetRadarrState(tmdbId string) RadarrStatus {
 			"term": "tmdb:" + tmdbId,
 		},
 	})
-
-	fmt.Println(string(body))
 
 	parsedBody := []RadarrMovieLookupResp{}
 	err := json.Unmarshal(body, &parsedBody)
@@ -83,10 +81,7 @@ type RadarrAddBody struct {
 	AddOptions       RadarrAddBodyAddOptions `json:"addOptions,omitempty"`
 }
 
-func AddToRadarrDownload(movie RadarrStatus) {
-	// TODO : use config load at start
-	conf := config.LoadConfiguration()
-
+func AddToRadarrDownload(client f.FetcherClient, movie RadarrStatus, conf *config.Configuration) {
 	rootFolderPath := conf.RadarrRootPaths["movies"]
 	if movie.IsAnimation {
 		rootFolderPath = conf.RadarrRootPaths["anime_movies"]
@@ -104,7 +99,7 @@ func AddToRadarrDownload(movie RadarrStatus) {
 		},
 	}
 
-	body := f.Fetcher(f.FetcherParams{
+	client.FetchData(f.FetcherParams{
 		Method: "POST",
 		Url:    RadarrUrl + "movie",
 		Body:   reqBody,
@@ -114,17 +109,11 @@ func AddToRadarrDownload(movie RadarrStatus) {
 		},
 		Params: f.Param{},
 	})
-
-	fmt.Println(string(body))
 }
 
-func SendTmdbIDsToRadarr(tmdbIds []string) {
+func SendTmdbIDsToRadarr(client f.FetcherClient, tmdbIds []string, conf *config.Configuration) {
 	for _, tmdbId := range tmdbIds {
-		fmt.Println(tmdbId)
-
-		state := GetRadarrState(tmdbId)
-		fmt.Printf("%+v\n", state)
-
-		AddToRadarrDownload(state)
+		state := GetRadarrState(client, tmdbId)
+		AddToRadarrDownload(client, state, conf)
 	}
 }

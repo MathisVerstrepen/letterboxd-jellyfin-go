@@ -16,8 +16,8 @@ type User struct {
 
 const JellyfinUrl = "https://stream.diikstra.fr/"
 
-func GetUsers() []User {
-	body := f.Fetcher(f.FetcherParams{
+func GetUsers(client f.FetcherClient) []User {
+	body := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    JellyfinUrl + "Users",
 		Body:   nil,
@@ -27,6 +27,7 @@ func GetUsers() []User {
 		Params: f.Param{
 			"ApiKey": os.Getenv("JELLYFIN_API_KEY"),
 		},
+		UseProxy: false,
 	})
 
 	var users []User
@@ -35,8 +36,8 @@ func GetUsers() []User {
 	return users
 }
 
-func GetUserId(userName string) (string, error) {
-	users := GetUsers()
+func GetUserId(client f.FetcherClient, userName string) (string, error) {
+	users := GetUsers(client)
 
 	var userId string
 	for _, user := range users {
@@ -91,7 +92,7 @@ func GetUserViews(client f.FetcherClient, userId string, userCollectionId string
 	return userView.Items, nil
 }
 
-func removeSeenMoviesFromUserCollection(client f.FetcherClient, userId string, userCollectionId string) int {
+func RemoveSeenMoviesFromUserCollection(client f.FetcherClient, userId string, userCollectionId string) int {
 	userViews, err := GetUserViews(client, userId, userCollectionId)
 	numberOfMoviesRemoved := 0
 
@@ -114,6 +115,7 @@ func removeSeenMoviesFromUserCollection(client f.FetcherClient, userId string, u
 					"ApiKey": os.Getenv("JELLYFIN_API_KEY"),
 					"ids":    movie.Id,
 				},
+				WantErrCode: 204,
 			})
 
 			log.Println(string(body))

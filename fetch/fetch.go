@@ -2,30 +2,54 @@ package fetch
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/proxy"
 )
 
 type Header map[string]string
 type Param map[string]string
 
 type FetcherParams struct {
-	Method  string
-	Url     string
-	Body    any
-	Headers Header
-	Params  Param
+	Method      string
+	Url         string
+	Body        any
+	Headers     Header
+	Params      Param
+	UseProxy    bool
+	WantErrCode int
 }
 
 type FetcherClient interface {
 	FetchData(fp FetcherParams) []byte
 }
 
-func Fetcher(fp FetcherParams) []byte {
+type Fetcher struct {
+	ProxyUrl string
+}
+
+func (f Fetcher) FetchData(fp FetcherParams) []byte {
 	client := &http.Client{}
+
+	if fp.UseProxy {
+		dialer, err := proxy.SOCKS5("tcp", f.ProxyUrl, nil, proxy.Direct)
+		if err != nil {
+			log.Fatalf("Failed to initialize proxy.\nErr : %s", err)
+		}
+
+		dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
+			return dialer.Dial(network, address)
+		}
+		transport := &http.Transport{DialContext: dialContext,
+			DisableKeepAlives: true}
+		client = &http.Client{Transport: transport}
+	}
 
 	baseUrl, err := url.Parse(fp.Url)
 	if err != nil {
@@ -61,8 +85,10 @@ func Fetcher(fp FetcherParams) []byte {
 		log.Fatalf("Failed to make request.\nErr : %s", err)
 	}
 
-	if resp.StatusCode != 200 {
-		log.Printf("Warn: Got status code %d instead of standard 200", resp.StatusCode)
+	if fp.WantErrCode == 0 && resp.StatusCode != 200 {
+		log.Fatalf("Got status code %d instead of wanted 200\nUrl : %s", resp.StatusCode, fp.Url)
+	} else if fp.WantErrCode != 0 && fp.WantErrCode != resp.StatusCode {
+		log.Fatalf("Got status code %d instead of wanted %d\nUrl : %s", resp.StatusCode, fp.WantErrCode, fp.Url)
 	}
 
 	defer resp.Body.Close()

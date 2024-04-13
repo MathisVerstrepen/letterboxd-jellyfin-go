@@ -11,6 +11,8 @@ const confFilePath = "config/config.json"
 type UserDate struct {
 	Username             string
 	LatestWatchlistMovie string
+	CollectionId         string
+	JellyfinUserName     string
 }
 
 type Configuration struct {

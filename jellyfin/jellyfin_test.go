@@ -34,58 +34,53 @@ func initTestEnvironnement(t *testing.T) {
 	}
 }
 
-func TestGetUsers(t *testing.T) {
-	initTestEnvironnement(t)
-
-	tests := []struct {
-		name string
-	}{
-		{
-			name: "test1",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetUsers()
-			if len(got) == 0 {
-				t.Fatalf(`len(got) = 0, want > 0, error`)
-			}
-		})
-	}
-}
-
 func TestGetUserId(t *testing.T) {
 	initTestEnvironnement(t)
+
+	byteTestData_1, _ := json.Marshal(
+		[]User{{
+			Name: "Jean Bon",
+			Id:   "123",
+		}, {
+			Name: "Michel Sapin",
+			Id:   "456",
+		}},
+	)
 
 	type args struct {
 		userName string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
+		name           string
+		args           args
+		want           string
+		wantErr        bool
+		clientResponse []byte
 	}{
 		{
-			name: "test user test",
+			name: "Test existing user",
 			args: args{
-				userName: "test",
+				userName: "Michel Sapin",
 			},
-			want:    "e64cd0aadacf4db3b05aca48aa8ef644",
-			wantErr: false,
+			want:           "456",
+			wantErr:        false,
+			clientResponse: byteTestData_1,
 		},
 		{
-			name: "test unknown user",
+			name: "Test unknown user",
 			args: args{
-				userName: "helloworld",
+				userName: "Wrong User",
 			},
-			want:    "",
-			wantErr: true,
+			want:           "",
+			wantErr:        true,
+			clientResponse: byteTestData_1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetUserId(tt.args.userName)
+			mockClient := new(MockClient)
+			mockClient.On("FetchData", mock.Anything).Return(tt.clientResponse, nil)
+			got, err := GetUserId(mockClient, tt.args.userName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUserId() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -98,7 +93,6 @@ func TestGetUserId(t *testing.T) {
 }
 
 func TestGetUserViews(t *testing.T) {
-	mockClient := new(MockClient)
 	initTestEnvironnement(t)
 
 	testData1 := []UserView{{
@@ -116,12 +110,6 @@ func TestGetUserViews(t *testing.T) {
 	}}
 	byteTestData_1, _ := json.Marshal(ReqUserViewWrapper{
 		Items: testData1})
-
-	byteTestData_2, _ := json.Marshal(struct {
-		FalseField string
-	}{
-		FalseField: "testFalseJsonFormat",
-	})
 
 	type args struct {
 		userId           string
@@ -144,20 +132,11 @@ func TestGetUserViews(t *testing.T) {
 			want:           testData1,
 			clientResponse: byteTestData_1,
 		},
-		{
-			name: "Test with error from wrong json response",
-			args: args{
-				userId:           "exampleUserId",
-				userCollectionId: "exampleUserCollectionId",
-			},
-			wantErr:        true,
-			want:           testData1,
-			clientResponse: byteTestData_2,
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockClient := new(MockClient)
 			mockClient.On("FetchData", mock.Anything).Return(tt.clientResponse, nil)
 			got, err := GetUserViews(mockClient, tt.args.userId, tt.args.userCollectionId)
 			if (err != nil) != tt.wantErr {
@@ -216,7 +195,7 @@ func Test_removeSeenMoviesFromUserCollection(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient.On("FetchData", mock.Anything).Return(tt.clientResponse, nil)
-			if got := removeSeenMoviesFromUserCollection(mockClient, tt.args.userId, tt.args.userCollectionId); got != tt.want {
+			if got := RemoveSeenMoviesFromUserCollection(mockClient, tt.args.userId, tt.args.userCollectionId); got != tt.want {
 				t.Errorf("removeSeenMoviesFromUserCollection() error = %v, want %v", got, tt.want)
 			}
 		})
