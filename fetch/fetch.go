@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"slices"
 
 	"golang.org/x/net/proxy"
 )
@@ -17,13 +18,13 @@ type Header map[string]string
 type Param map[string]string
 
 type FetcherParams struct {
-	Method      string
-	Url         string
-	Body        any
-	Headers     Header
-	Params      Param
-	UseProxy    bool
-	WantErrCode int
+	Method       string
+	Url          string
+	Body         any
+	Headers      Header
+	Params       Param
+	UseProxy     bool
+	WantErrCodes []int
 }
 
 type FetcherClient interface {
@@ -85,10 +86,10 @@ func (f Fetcher) FetchData(fp FetcherParams) []byte {
 		log.Fatalf("Failed to make request.\nErr : %s", err)
 	}
 
-	if fp.WantErrCode == 0 && resp.StatusCode != 200 {
+	if fp.WantErrCodes == nil && resp.StatusCode != 200 {
 		log.Fatalf("Got status code %d instead of wanted 200\nUrl : %s", resp.StatusCode, fp.Url)
-	} else if fp.WantErrCode != 0 && fp.WantErrCode != resp.StatusCode {
-		log.Fatalf("Got status code %d instead of wanted %d\nUrl : %s", resp.StatusCode, fp.WantErrCode, fp.Url)
+	} else if fp.WantErrCodes != nil && !slices.Contains(fp.WantErrCodes, resp.StatusCode) {
+		log.Fatalf("Got status code %d instead of wanted %d\nUrl : %s", resp.StatusCode, fp.WantErrCodes, fp.Url)
 	}
 
 	defer resp.Body.Close()

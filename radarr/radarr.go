@@ -107,7 +107,8 @@ func AddToRadarrDownload(client f.FetcherClient, movie RadarrStatus, conf *confi
 			"X-Api-Key":    os.Getenv("RADARR_API_KEY"),
 			"Content-Type": "application/json",
 		},
-		Params: f.Param{},
+		Params:       f.Param{},
+		WantErrCodes: []int{201, 400},
 	})
 }
 

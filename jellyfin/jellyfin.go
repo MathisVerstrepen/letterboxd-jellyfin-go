@@ -115,7 +115,7 @@ func RemoveSeenMoviesFromUserCollection(client f.FetcherClient, userId string, u
 					"ApiKey": os.Getenv("JELLYFIN_API_KEY"),
 					"ids":    movie.Id,
 				},
-				WantErrCode: 204,
+				WantErrCodes: []int{204},
 			})
 
 			log.Println(string(body))
