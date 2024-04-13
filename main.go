@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"path/filepath"
+	"runtime"
 
 	"github.com/joho/godotenv"
 
@@ -13,8 +15,13 @@ import (
 	rd "diikstra.fr/letterboxd-jellyfin-go/radarr"
 )
 
+var (
+	_, b, _, _ = runtime.Caller(0)
+	basepath   = filepath.Dir(b)
+)
+
 func main() {
-	err := godotenv.Load(".env")
+	err := godotenv.Load(filepath.Join(basepath, ".env"))
 	if err != nil {
 		log.Fatalf("Error while loading env file.\nErr: %s", err)
 	}
@@ -43,6 +50,5 @@ func main() {
 		jf.RemoveSeenMoviesFromUserCollection(fetcher, userId, conf.Users[index].CollectionId)
 	}
 
-	fmt.Println(conf)
 	config.PersistChanges(conf)
 }

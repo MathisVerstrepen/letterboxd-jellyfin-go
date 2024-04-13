@@ -4,9 +4,16 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
-const confFilePath = "config/config.json"
+var (
+	_, b, _, _ = runtime.Caller(0)
+	basepath   = filepath.Dir(b)
+)
+
+const confFilePath = "config.json"
 
 type UserDate struct {
 	Username             string
@@ -23,12 +30,17 @@ type Configuration struct {
 }
 
 func LoadConfiguration() Configuration {
-	file, _ := os.Open(confFilePath)
+	file, err := os.Open(filepath.Join(basepath, confFilePath))
+	if err != nil {
+		log.Println("Fail to open config file")
+		log.Fatal(err)
+	}
 	defer file.Close()
 	decoder := json.NewDecoder(file)
 	configuration := Configuration{}
-	err := decoder.Decode(&configuration)
+	err = decoder.Decode(&configuration)
 	if err != nil {
+		log.Println("Fail to decode config file")
 		log.Fatal(err)
 	}
 
@@ -42,5 +54,5 @@ func PersistChanges(configuration Configuration) {
 		log.Fatal(err)
 	}
 
-	os.WriteFile(confFilePath, json, 0777)
+	os.WriteFile(filepath.Join(basepath, confFilePath), json, 0777)
 }

@@ -1,0 +1,11 @@
+version: "3.1"
+name: letterboxd_jellyfin_go
+
+services:
+  letterboxd-jellyfin-go-cron:
+    container_name: letterboxd-jellyfin-go-cron
+    image: registry.diikstra.fr/letterboxd-jellyfin-go-cron:${IMAGE_TAG}
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    restart: unless-stopped

@@ -1,0 +1,29 @@
+{
+    "_meta": {
+        "deployService": "ApolloLaunch",
+        "deployServiceVersion": "1.0.0"
+    },
+    "config": {
+        "repository": {
+            "owner": "Mathis Verstrepen",
+            "name": "letterboxd-jellyfin-go"
+        },
+
+        "docker": {
+            "imageName": "letterboxd-jellyfin-go-cron",
+            "imageTag": "latest",
+            "dockerfileLocation": "Dockerfile",
+            "buildArgs": [],
+            "composeFile": "docker-compose.yml",
+            "envFile": "letterboxd-jellyfin-go.env",
+            "envDeployType": "file",
+            "host": "hogwarts-2"
+        },
+
+        "deploy": {
+            "strategy": "all-at-once"
+        },
+
+        "environment": "prod"
+    }
+}
