@@ -114,7 +114,10 @@ func AddToRadarrDownload(client f.FetcherClient, movie RadarrStatus, conf *confi
 
 func SendTmdbIDsToRadarr(client f.FetcherClient, tmdbIds []string, conf *config.Configuration) {
 	for _, tmdbId := range tmdbIds {
-		state := GetRadarrState(client, tmdbId)
-		AddToRadarrDownload(client, state, conf)
+		if tmdbId != "" {
+			state := GetRadarrState(client, tmdbId)
+			AddToRadarrDownload(client, state, conf)
+		}
+
 	}
 }
