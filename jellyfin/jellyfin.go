@@ -7,6 +7,7 @@ import (
 	"os"
 
 	f "diikstra.fr/letterboxd-jellyfin-go/fetch"
+	rd "diikstra.fr/letterboxd-jellyfin-go/radarr"
 )
 
 type User struct {
@@ -104,7 +105,7 @@ func RemoveSeenMoviesFromUserCollection(client f.FetcherClient, userId string, u
 	for _, movie := range userViews {
 		if movie.UserData.Played {
 			log.Printf("Deleting %s of user %s from collection %s\n", movie.Name, userId, userCollectionId)
-			body := client.FetchData(f.FetcherParams{
+			client.FetchData(f.FetcherParams{
 				Method: "DELETE",
 				Url:    JellyfinUrl + "Collections/" + userCollectionId + "/Items",
 				Body:   nil,
@@ -118,11 +119,76 @@ func RemoveSeenMoviesFromUserCollection(client f.FetcherClient, userId string, u
 				WantErrCodes: []int{204},
 			})
 
-			log.Println(string(body))
-
 			numberOfMoviesRemoved += 1
 		}
 	}
 
 	return numberOfMoviesRemoved
+}
+
+type MoviesItem struct {
+	Name           string
+	ProductionYear int
+	Id             string
+}
+
+type Movies struct {
+	Items []MoviesItem
+}
+
+func GetAllMovies(client f.FetcherClient) *[]MoviesItem {
+	body := client.FetchData(f.FetcherParams{
+		Method: "GET",
+		Url:    JellyfinUrl + "Items",
+		Body:   nil,
+		Headers: f.Header{
+			"content-type": "application/json; charset=utf-8",
+		},
+		Params: f.Param{
+			"ApiKey":           os.Getenv("JELLYFIN_API_KEY"),
+			"Recursive":        "true",
+			"IncludeItemTypes": "Movie",
+			"fields":           "MediaSources,People",
+		},
+		UseProxy: false,
+	})
+
+	var res Movies
+	json.Unmarshal(body, &res)
+
+	return &res.Items
+}
+
+func GetMovieJellyfinId(movies *[]MoviesItem, movie_name string, movie_year int) (string, error) {
+	for _, movie := range *movies {
+		if movie.Name == movie_name && movie.ProductionYear == movie_year {
+			return movie.Id, nil
+		}
+	}
+
+	return "", errors.New("unable to find movie in the Jellyfin library")
+}
+
+func AddMoviesToCollection(client f.FetcherClient, allMovies *[]MoviesItem, radarrStates []rd.RadarrStatus, userId string, userCollectionId string) {
+	ids := ""
+	for _, state := range radarrStates {
+		jellyfinId, err := GetMovieJellyfinId(allMovies, state.Title, state.ProductionYear)
+		if err == nil {
+			ids += jellyfinId + ","
+		}
+	}
+
+	client.FetchData(f.FetcherParams{
+		Method: "POST",
+		Url:    JellyfinUrl + "Collections/" + userCollectionId + "/Items",
+		Body:   nil,
+		Headers: f.Header{
+			"content-type": "application/json; charset=utf-8",
+		},
+		Params: f.Param{
+			"ApiKey": os.Getenv("JELLYFIN_API_KEY"),
+			"ids":    ids[:len(ids)-1],
+		},
+		WantErrCodes: []int{204},
+	})
 }

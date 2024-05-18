@@ -27,7 +27,6 @@ func main() {
 	}
 
 	conf := config.LoadConfiguration()
-	fmt.Println(conf)
 
 	fetcher := f.Fetcher{
 		ProxyUrl: conf.Proxy,
@@ -36,18 +35,21 @@ func main() {
 		Client: fetcher,
 	}
 
+	allMovies := jf.GetAllMovies(fetcher)
+
 	for index := range conf.Users {
 		fmt.Println(conf.Users[index].Username)
 		tmdbIds, _ := letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
 		fmt.Println(tmdbIds)
 
-		rd.SendTmdbIDsToRadarr(fetcher, tmdbIds, &conf)
+		radarrStates := rd.SendTmdbIDsToRadarr(fetcher, tmdbIds, &conf)
 
 		userId, err := jf.GetUserId(fetcher, conf.Users[index].JellyfinUserName)
 		if err != nil {
 			log.Fatalf("No user matching in Jellyfin found for %s", conf.Users[index].JellyfinUserName)
 		}
 		jf.RemoveSeenMoviesFromUserCollection(fetcher, userId, conf.Users[index].CollectionId)
+		jf.AddMoviesToCollection(fetcher, allMovies, radarrStates, userId, conf.Users[index].CollectionId)
 	}
 
 	config.PersistChanges(conf)
