@@ -178,6 +178,10 @@ func AddMoviesToCollection(client f.FetcherClient, allMovies *[]MoviesItem, rada
 		}
 	}
 
+	if ids == "" {
+		return
+	}
+
 	client.FetchData(f.FetcherParams{
 		Method: "POST",
 		Url:    JellyfinUrl + "Collections/" + userCollectionId + "/Items",
