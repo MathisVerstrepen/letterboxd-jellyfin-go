@@ -2,6 +2,7 @@ package radarr
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -38,7 +39,7 @@ type RadarrStatus struct {
 	IsAnimation    bool
 }
 
-func GetRadarrState(client f.FetcherClient, tmdbId string) RadarrStatus {
+func GetRadarrState(client f.FetcherClient, tmdbId string) (RadarrStatus, error) {
 	body := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    RadarrUrl + "movie/lookup",
@@ -57,6 +58,11 @@ func GetRadarrState(client f.FetcherClient, tmdbId string) RadarrStatus {
 		log.Fatalf("Failed to parse JSON.\nErr : %s", err)
 	}
 
+	if len(parsedBody) == 0 {
+		log.Printf("TMDB id %s return empty state\n", tmdbId)
+		return RadarrStatus{}, errors.New("return empty state")
+	}
+
 	return RadarrStatus{
 		HasFile:        parsedBody[0].MovieFile != MovieLookupFile{} && parsedBody[0].MovieFile.RelativePath != "",
 		Monitored:      parsedBody[0].Monitored,
@@ -64,7 +70,7 @@ func GetRadarrState(client f.FetcherClient, tmdbId string) RadarrStatus {
 		TmdbId:         fmt.Sprint(parsedBody[0].TmdbId),
 		ProductionYear: parsedBody[0].Year,
 		IsAnimation:    slices.Contains(parsedBody[0].Genres, "Animation"),
-	}
+	}, nil
 }
 
 type RadarrAddBodyAddOptions struct {
@@ -117,7 +123,10 @@ func SendTmdbIDsToRadarr(client f.FetcherClient, tmdbIds []string, conf *config.
 
 	for _, tmdbId := range tmdbIds {
 		if tmdbId != "" {
-			state := GetRadarrState(client, tmdbId)
+			state, err := GetRadarrState(client, tmdbId)
+			if err != nil {
+				continue
+			}
 			AddToRadarrDownload(client, state, conf)
 			states = append(states, state)
 		}
