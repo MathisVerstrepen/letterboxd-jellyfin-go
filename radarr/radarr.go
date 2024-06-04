@@ -13,7 +13,7 @@ import (
 	f "diikstra.fr/letterboxd-jellyfin-go/fetch"
 )
 
-const RadarrUrl = "http://192.168.2.64:7878/api/v3/"
+const RadarrUrl = "http://localhost:7878/api/v3/"
 
 type RadarrState string
 

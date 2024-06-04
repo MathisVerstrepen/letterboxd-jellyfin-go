@@ -24,7 +24,9 @@ type UserDate struct {
 
 type Configuration struct {
 	Users           []UserDate
-	Proxy           string
+	ProxyUrl        string
+	ProxyUser       string
+	ProxyPass       string
 	CollectionIds   map[string]string
 	RadarrRootPaths map[string]string
 }
@@ -43,6 +45,10 @@ func LoadConfiguration() Configuration {
 		log.Println("Fail to decode config file")
 		log.Fatal(err)
 	}
+
+	configuration.ProxyUrl = os.Getenv("PROXY_URL")
+	configuration.ProxyUser = os.Getenv("PROXY_USER")
+	configuration.ProxyPass = os.Getenv("PROXY_PASS")
 
 	return configuration
 }

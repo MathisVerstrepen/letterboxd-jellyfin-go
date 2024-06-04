@@ -17,9 +17,8 @@
             "composeFile": "docker-compose.yml",
             "envFile": "letterboxd-jellyfin-go.env",
             "envDeployType": "file",
-            "host": "hogwarts-2"
+            "host": "hogwarts-3"
         },
-
         "deploy": {
             "strategy": "all-at-once"
         },

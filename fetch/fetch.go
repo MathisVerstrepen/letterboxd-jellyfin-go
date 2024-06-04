@@ -32,14 +32,19 @@ type FetcherClient interface {
 }
 
 type Fetcher struct {
-	ProxyUrl string
+	ProxyUrl  string
+	ProxyUser string
+	ProxyPass string
 }
 
 func (f Fetcher) FetchData(fp FetcherParams) []byte {
 	client := &http.Client{}
 
 	if fp.UseProxy {
-		dialer, err := proxy.SOCKS5("tcp", f.ProxyUrl, nil, proxy.Direct)
+		dialer, err := proxy.SOCKS5("tcp", f.ProxyUrl, &proxy.Auth{
+			User:     f.ProxyUser,
+			Password: f.ProxyPass,
+		}, proxy.Direct)
 		if err != nil {
 			log.Fatalf("Failed to initialize proxy.\nErr : %s", err)
 		}

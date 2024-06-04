@@ -29,7 +29,9 @@ func main() {
 	conf := config.LoadConfiguration()
 
 	fetcher := f.Fetcher{
-		ProxyUrl: conf.Proxy,
+		ProxyUrl:  conf.ProxyUrl,
+		ProxyUser: conf.ProxyUser,
+		ProxyPass: conf.ProxyPass,
 	}
 	letterboxdScrapper := lt.LetterboxdScrapper{
 		Client: fetcher,

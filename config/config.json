@@ -1,1 +1,30 @@
-{"Users":[{"Username":"Mathis_V","LatestWatchlistMovie":"558449","CollectionId":"e88a35853226fa5bc6af39a1c29bfc09","JellyfinUserName":"admin"},{"Username":"Nimportnawak_","LatestWatchlistMovie":"25237","CollectionId":"d3d247b39b044e916fdc7e46d922d514","JellyfinUserName":"mfontaine"},{"Username":"arkc0s","LatestWatchlistMovie":"","CollectionId":"2db0f54db32a66ec41af0d3d11616e0e","JellyfinUserName":"leo.wadin"}],"Proxy":"192.168.2.51:1080","CollectionIds":{"directors":"af6bd65fc924d6b0e4438df060467e8f"},"RadarrRootPaths":{"anime_movies":"/data/complete/anime_movies","anime_series":"/data/complete/anime_tv","movies":"/data/complete/movies","series":"/data/complete/tv"}}
+{
+    "Users": [
+        {
+            "Username": "Mathis_V",
+            "LatestWatchlistMovie": "558449",
+            "CollectionId": "e88a35853226fa5bc6af39a1c29bfc09",
+            "JellyfinUserName": "admin"
+        },
+        {
+            "Username": "Nimportnawak_",
+            "LatestWatchlistMovie": "25237",
+            "CollectionId": "d3d247b39b044e916fdc7e46d922d514",
+            "JellyfinUserName": "mfontaine"
+        },
+        {
+            "Username": "arkc0s",
+            "LatestWatchlistMovie": "",
+            "CollectionId": "2db0f54db32a66ec41af0d3d11616e0e",
+            "JellyfinUserName": "leo.wadin"
+        }
+    ],
+    "Proxy": "",
+    "CollectionIds": { "directors": "af6bd65fc924d6b0e4438df060467e8f" },
+    "RadarrRootPaths": {
+        "anime_movies": "/data/complete/anime_movies",
+        "anime_series": "/data/complete/anime_tv",
+        "movies": "/data/complete/movies",
+        "series": "/data/complete/tv"
+    }
+}
