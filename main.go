@@ -27,6 +27,10 @@ func main() {
 		log.Fatalf("Error while loading env file.\nErr: %s", err)
 	}
 
+	if config.IsLocked() {
+		log.Fatal("App is locked, wait for the current run to finish.")
+	}
+
 	conf := config.LoadConfiguration()
 
 	fetcher := f.Fetcher{
@@ -64,4 +68,5 @@ func main() {
 	}
 
 	config.PersistChanges(conf)
+	config.Unlock()
 }

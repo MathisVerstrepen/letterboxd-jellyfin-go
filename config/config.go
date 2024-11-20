@@ -55,6 +55,19 @@ func LoadConfiguration() Configuration {
 	return configuration
 }
 
+func IsLocked() bool {
+	if _, err := os.Stat(filepath.Join(basepath, "app.lock")); err == nil {
+		return true
+	}
+
+	os.Create(filepath.Join(basepath, "app.lock"))
+	return false
+}
+
+func Unlock() {
+	os.Remove(filepath.Join(basepath, "app.lock"))
+}
+
 func PersistChanges(configuration Configuration) {
 	json, err := json.Marshal(configuration)
 
