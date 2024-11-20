@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 var (
@@ -15,15 +16,16 @@ var (
 
 const confFilePath = "config.json"
 
-type UserDate struct {
+type UserData struct {
 	Username             string
 	LatestWatchlistMovie string
 	CollectionId         string
 	JellyfinUserName     string
+	LastFullSync         time.Time
 }
 
 type Configuration struct {
-	Users           []UserDate
+	Users           []UserData
 	ProxyUrl        string
 	ProxyUser       string
 	ProxyPass       string

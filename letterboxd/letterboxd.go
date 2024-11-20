@@ -118,3 +118,43 @@ func (ls LetterboxdScrapper) GetNewestUserWatchlist(userName string, latestFetch
 
 	return tmdbIds, nil
 }
+
+func (ls LetterboxdScrapper) GetFullUserWatchlist(userName string) ([]string, error) {
+	pageIndex := 1
+	var tmdbIds []string
+
+	for pageIndex > 0 {
+		fmt.Printf("Fetching page %d\n", pageIndex)
+		node, err := ls.letterboxdGetFetcherWithRetry(letterboxdUrl + userName + "/watchlist/page/" + fmt.Sprint(pageIndex))
+
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		posters := gs.GetNodeByClass(node, &gs.HtmlSelector{
+			ClassNames: "really-lazy-load poster film-poster",
+			Tag:        "div",
+			Multiple:   true,
+		})
+
+		if len(posters) < numMoviesWatchlistPage {
+			pageIndex = -1
+		}
+
+		for _, poster := range posters {
+			dataTargetLink := gs.GetAttribute(poster, "data-target-link")
+			tmdbId, err := ls.getTmdbIdFromSlug(dataTargetLink[1:])
+			fmt.Printf("%s -> %s\n", dataTargetLink, tmdbId)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			tmdbIds = append(tmdbIds, tmdbId)
+		}
+		pageIndex += 1
+	}
+
+	return tmdbIds, nil
+}
