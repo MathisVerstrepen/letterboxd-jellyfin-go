@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 
 	f "diikstra.fr/letterboxd-jellyfin-go/fetch"
 	rd "diikstra.fr/letterboxd-jellyfin-go/radarr"
@@ -170,29 +171,39 @@ func GetMovieJellyfinId(movies *[]MoviesItem, movie_name string, movie_year int)
 }
 
 func AddMoviesToCollection(client f.FetcherClient, allMovies *[]MoviesItem, radarrStates []rd.RadarrStatus, userId string, userCollectionId string) {
-	ids := ""
+	const batchSize = 20
+	var ids []string
+
 	for _, state := range radarrStates {
 		jellyfinId, err := GetMovieJellyfinId(allMovies, state.Title, state.ProductionYear)
 		if err == nil {
-			ids += jellyfinId + ","
+			ids = append(ids, jellyfinId)
 		}
 	}
 
-	if ids == "" {
-		return
-	}
+	for i := 0; i < len(ids); i += batchSize {
+		end := i + batchSize
+		if end > len(ids) {
+			end = len(ids)
+		}
 
-	client.FetchData(f.FetcherParams{
-		Method: "POST",
-		Url:    JellyfinUrl + "Collections/" + userCollectionId + "/Items",
-		Body:   nil,
-		Headers: f.Header{
-			"content-type": "application/json; charset=utf-8",
-		},
-		Params: f.Param{
-			"ApiKey": os.Getenv("JELLYFIN_API_KEY"),
-			"ids":    ids[:len(ids)-1],
-		},
-		WantErrCodes: []int{204},
-	})
+		batch := ids[i:end]
+		client.FetchData(f.FetcherParams{
+			Method: "POST",
+			Url:    JellyfinUrl + "Collections/" + userCollectionId + "/Items",
+			Body:   nil,
+			Headers: f.Header{
+				"content-type": "application/json; charset=utf-8",
+			},
+			Params: f.Param{
+				"ApiKey": os.Getenv("JELLYFIN_API_KEY"),
+				"ids":    joinIds(batch),
+			},
+			WantErrCodes: []int{204},
+		})
+	}
+}
+
+func joinIds(ids []string) string {
+	return strings.Join(ids, ",")
 }
