@@ -43,13 +43,13 @@ func main() {
 	}
 
 	allMovies := jf.GetAllMovies(fetcher)
+	currentTime := time.Now()
 
 	for index := range conf.Users {
 		fmt.Println(conf.Users[index].Username)
 		var tmdbIds []string
 
-		currentTime := time.Now()
-		if currentTime.Sub(conf.Users[index].LastFullSync).Hours() < 24 || conf.Users[index].LastFullSync.IsZero() {
+		if currentTime.Sub(conf.Users[index].LastFullSync) > 24*time.Hour {
 			fmt.Println("Last full sync was less than 24 hours ago. Full syncing.")
 			tmdbIds, _ = letterboxdScrapper.GetFullUserWatchlist(conf.Users[index].Username)
 			conf.Users[index].LastFullSync = currentTime

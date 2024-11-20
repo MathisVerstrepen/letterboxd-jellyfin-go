@@ -4,29 +4,34 @@
             "Username": "Mathis_V",
             "LatestWatchlistMovie": "1214499",
             "CollectionId": "e88a35853226fa5bc6af39a1c29bfc09",
-            "JellyfinUserName": "admin"
+            "JellyfinUserName": "admin",
+            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
         },
         {
             "Username": "Nimportnawak_",
             "LatestWatchlistMovie": "381284",
             "CollectionId": "d3d247b39b044e916fdc7e46d922d514",
-            "JellyfinUserName": "mfontaine"
+            "JellyfinUserName": "mfontaine",
+            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
         },
         {
             "Username": "arkc0s",
             "LatestWatchlistMovie": "196",
             "CollectionId": "2db0f54db32a66ec41af0d3d11616e0e",
-            "JellyfinUserName": "leo.wadin"
+            "JellyfinUserName": "leo.wadin",
+            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
         }, {
             "Username": "dandan2611",
             "LatestWatchlistMovie": "",
             "CollectionId": "e208cfc8bbba6cc1af342a761587ebc4",
-            "JellyfinUserName": "dandan2611"
+            "JellyfinUserName": "dandan2611",
+            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
         }, {
             "Username": "luxioos",
             "LatestWatchlistMovie": "",
             "CollectionId": "982224dcf64d1707f13a98352bba25c9",
-            "JellyfinUserName": "mathieu.duquenoy"
+            "JellyfinUserName": "mathieu.duquenoy",
+            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
         }
     ],
     "Proxy": "",
