@@ -51,10 +51,23 @@ func main() {
 
 		if currentTime.Sub(conf.Users[index].LastFullSync) > 24*time.Hour {
 			fmt.Println("Last full sync was less than 24 hours ago. Full syncing.")
-			tmdbIds, _ = letterboxdScrapper.GetFullUserWatchlist(conf.Users[index].Username)
+			tmdbIds, err = letterboxdScrapper.GetFullUserWatchlist(conf.Users[index].Username)
+
+			if err != nil {
+				log.Fatalf("Error while getting full user watchlist for %s\nErr: %s", conf.Users[index].Username, err)
+				config.Unlock()
+				return
+			}
+
 			conf.Users[index].LastFullSync = currentTime
 		} else {
-			tmdbIds, _ = letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
+			tmdbIds, err = letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
+
+			if err != nil {
+				log.Fatalf("Error while getting newest user watchlist for %s\nErr: %s", conf.Users[index].Username, err)
+				config.Unlock()
+				return
+			}
 		}
 
 		radarrStates := rd.SendTmdbIDsToRadarr(fetcher, tmdbIds, &conf)
@@ -62,6 +75,8 @@ func main() {
 		userId, err := jf.GetUserId(fetcher, conf.Users[index].JellyfinUserName)
 		if err != nil {
 			log.Fatalf("No user matching in Jellyfin found for %s", conf.Users[index].JellyfinUserName)
+			config.Unlock()
+			return
 		}
 		jf.RemoveSeenMoviesFromUserCollection(fetcher, userId, conf.Users[index].CollectionId)
 		jf.AddMoviesToCollection(fetcher, allMovies, radarrStates, userId, conf.Users[index].CollectionId)
