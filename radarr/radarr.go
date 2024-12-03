@@ -55,7 +55,8 @@ func GetRadarrState(client f.FetcherClient, tmdbId string) (RadarrStatus, error)
 	parsedBody := []RadarrMovieLookupResp{}
 	err := json.Unmarshal(body, &parsedBody)
 	if err != nil {
-		log.Fatalf("Failed to parse JSON.\nErr : %s", err)
+		log.Println("Failed to parse JSON.")
+		panic(err)
 	}
 
 	if len(parsedBody) == 0 {

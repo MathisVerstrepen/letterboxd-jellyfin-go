@@ -30,6 +30,7 @@ func main() {
 	if config.IsLocked() {
 		log.Fatal("App is locked, wait for the current run to finish.")
 	}
+	defer config.Unlock()
 
 	conf := config.LoadConfiguration()
 
@@ -54,9 +55,7 @@ func main() {
 			tmdbIds, err = letterboxdScrapper.GetFullUserWatchlist(conf.Users[index].Username)
 
 			if err != nil {
-				log.Fatalf("Error while getting full user watchlist for %s\nErr: %s", conf.Users[index].Username, err)
-				config.Unlock()
-				return
+				panic(err)
 			}
 
 			conf.Users[index].LastFullSync = currentTime
@@ -64,9 +63,7 @@ func main() {
 			tmdbIds, err = letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
 
 			if err != nil {
-				log.Fatalf("Error while getting newest user watchlist for %s\nErr: %s", conf.Users[index].Username, err)
-				config.Unlock()
-				return
+				panic(err)
 			}
 		}
 
@@ -74,14 +71,11 @@ func main() {
 
 		userId, err := jf.GetUserId(fetcher, conf.Users[index].JellyfinUserName)
 		if err != nil {
-			log.Fatalf("No user matching in Jellyfin found for %s", conf.Users[index].JellyfinUserName)
-			config.Unlock()
-			return
+			panic(err)
 		}
 		jf.RemoveSeenMoviesFromUserCollection(fetcher, userId, conf.Users[index].CollectionId)
 		jf.AddMoviesToCollection(fetcher, allMovies, radarrStates, userId, conf.Users[index].CollectionId)
 	}
 
 	config.PersistChanges(conf)
-	config.Unlock()
 }
