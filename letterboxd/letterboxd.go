@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 
@@ -48,6 +49,8 @@ func (ls LetterboxdScrapper) letterboxdGetFetcherWithRetry(endpoint string) (*ht
 		}
 		numFetch += 1
 		fmt.Println("fetch failed, retrying...")
+
+		time.Sleep(2 * time.Second)
 	}
 	fmt.Println("fetch failed after 3 retries, aborting...")
 	return nil, err
@@ -108,6 +111,8 @@ func (ls LetterboxdScrapper) GetNewestUserWatchlist(userName string, latestFetch
 			}
 
 			tmdbIds = append(tmdbIds, tmdbId)
+
+			time.Sleep(1 * time.Second)
 		}
 		pageIndex += 1
 	}
@@ -152,6 +157,8 @@ func (ls LetterboxdScrapper) GetFullUserWatchlist(userName string) ([]string, er
 			}
 
 			tmdbIds = append(tmdbIds, tmdbId)
+
+			time.Sleep(1 * time.Second)
 		}
 		pageIndex += 1
 	}
