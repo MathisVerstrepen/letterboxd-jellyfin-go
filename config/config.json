@@ -2,45 +2,51 @@
     "Users": [
         {
             "Username": "Mathis_V",
-            "LatestWatchlistMovie": "1214499",
+            "LatestWatchlistMovie": "1903",
             "CollectionId": "e88a35853226fa5bc6af39a1c29bfc09",
             "JellyfinUserName": "admin",
-            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
+            "LastFullSync": "2025-04-30T06:35:10.444928178Z"
         },
         {
             "Username": "Nimportnawak_",
-            "LatestWatchlistMovie": "381284",
+            "LatestWatchlistMovie": "9607",
             "CollectionId": "d3d247b39b044e916fdc7e46d922d514",
             "JellyfinUserName": "mfontaine",
-            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
+            "LastFullSync": "2025-04-30T06:35:10.444928178Z"
         },
         {
             "Username": "arkc0s",
             "LatestWatchlistMovie": "196",
             "CollectionId": "2db0f54db32a66ec41af0d3d11616e0e",
             "JellyfinUserName": "leo.wadin",
-            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
-        }, {
+            "LastFullSync": "2025-04-30T06:35:10.444928178Z"
+        },
+        {
             "Username": "dandan2611",
-            "LatestWatchlistMovie": "",
+            "LatestWatchlistMovie": "516486",
             "CollectionId": "e208cfc8bbba6cc1af342a761587ebc4",
             "JellyfinUserName": "dandan2611",
-            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
-        }, {
+            "LastFullSync": "2025-04-30T06:35:10.444928178Z"
+        },
+        {
             "Username": "luxioos",
-            "LatestWatchlistMovie": "",
+            "LatestWatchlistMovie": "962571",
             "CollectionId": "982224dcf64d1707f13a98352bba25c9",
             "JellyfinUserName": "mathieu.duquenoy",
-            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
-        }, {
+            "LastFullSync": "2025-04-30T06:35:10.444928178Z"
+        },
+        {
             "Username": "toutmo6",
-            "LatestWatchlistMovie": "",
+            "LatestWatchlistMovie": "65709",
             "CollectionId": "26a5a00106f7dad681c9d02e83c6d65d",
             "JellyfinUserName": "toutmo6",
-            "LastFullSync":"2024-01-01T00:00:00.000000000Z"
+            "LastFullSync": "2025-04-30T06:35:10.444928178Z"
         }
     ],
-    "Proxy": "",
+    "ProxyUrl": "",
+    "ProxyUser": "",
+    "ProxyPass": "",
+    "CollectionIds": null,
     "RadarrRootPaths": {
         "anime_movies": "/data/complete/anime_movies",
         "anime_series": "/data/complete/anime_tv",
