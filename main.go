@@ -5,7 +5,6 @@ import (
 	"log"
 	"path/filepath"
 	"runtime"
-	"time"
 
 	"github.com/joho/godotenv"
 
@@ -44,27 +43,15 @@ func main() {
 	}
 
 	allMovies := jf.GetAllMovies(fetcher)
-	currentTime := time.Now()
 
 	for index := range conf.Users {
 		fmt.Println(conf.Users[index].Username)
 		var tmdbIds []string
 
-		if currentTime.Sub(conf.Users[index].LastFullSync) > 24*time.Hour {
-			fmt.Println("Last full sync was less than 24 hours ago. Full syncing.")
-			tmdbIds, err = letterboxdScrapper.GetFullUserWatchlist(conf.Users[index].Username)
+		tmdbIds, err = letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
 
-			if err != nil {
-				panic(err)
-			}
-
-			conf.Users[index].LastFullSync = currentTime
-		} else {
-			tmdbIds, err = letterboxdScrapper.GetNewestUserWatchlist(conf.Users[index].Username, &conf.Users[index].LatestWatchlistMovie)
-
-			if err != nil {
-				panic(err)
-			}
+		if err != nil {
+			panic(err)
 		}
 
 		radarrStates := rd.SendTmdbIDsToRadarr(fetcher, tmdbIds, &conf)
