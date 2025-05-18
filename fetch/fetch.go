@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net"
@@ -28,7 +29,7 @@ type FetcherParams struct {
 }
 
 type FetcherClient interface {
-	FetchData(fp FetcherParams) []byte
+	FetchData(fp FetcherParams) ([]byte, error)
 }
 
 type Fetcher struct {
@@ -37,7 +38,7 @@ type Fetcher struct {
 	ProxyPass string
 }
 
-func (f Fetcher) FetchData(fp FetcherParams) []byte {
+func (f Fetcher) FetchData(fp FetcherParams) ([]byte, error) {
 	client := &http.Client{}
 
 	if fp.UseProxy {
@@ -47,21 +48,23 @@ func (f Fetcher) FetchData(fp FetcherParams) []byte {
 		}, proxy.Direct)
 		if err != nil {
 			log.Println("Failed to initialize proxy.")
-			panic(err)
+			return nil, err
 		}
 
 		dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
 			return dialer.Dial(network, address)
 		}
-		transport := &http.Transport{DialContext: dialContext,
-			DisableKeepAlives: true}
+		transport := &http.Transport{
+			DialContext:       dialContext,
+			DisableKeepAlives: true,
+		}
 		client = &http.Client{Transport: transport}
 	}
 
 	baseUrl, err := url.Parse(fp.Url)
 	if err != nil {
 		log.Println("Failed to parse url.")
-		panic(err)
+		return nil, err
 	}
 
 	params := url.Values{}
@@ -70,12 +73,12 @@ func (f Fetcher) FetchData(fp FetcherParams) []byte {
 	}
 	baseUrl.RawQuery = params.Encode()
 
-	var bodyBuffer *bytes.Buffer = &bytes.Buffer{}
+	bodyBuffer := &bytes.Buffer{}
 	if fp.Body != nil {
 		jsonBytes, err := json.Marshal(fp.Body)
 		if err != nil {
 			log.Println("Failed to encode req body in bytes.")
-			panic(err)
+			return nil, err
 		}
 		bodyBuffer = bytes.NewBuffer(jsonBytes)
 	}
@@ -83,7 +86,7 @@ func (f Fetcher) FetchData(fp FetcherParams) []byte {
 	req, err := http.NewRequest(fp.Method, baseUrl.String(), bodyBuffer)
 	if err != nil {
 		log.Println("Failed to initialize request.")
-		panic(err)
+		return nil, err
 	}
 
 	for headerKey, headerValue := range fp.Headers {
@@ -93,23 +96,23 @@ func (f Fetcher) FetchData(fp FetcherParams) []byte {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Failed to make request.")
-		panic(err)
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if fp.WantErrCodes == nil && resp.StatusCode != 200 {
 		log.Printf("Got status code %d instead of wanted 200\nUrl : %s", resp.StatusCode, fp.Url)
-		panic("Failed to get 200 status code.")
+		return nil, errors.New("failed to get 200 status code")
 	} else if fp.WantErrCodes != nil && !slices.Contains(fp.WantErrCodes, resp.StatusCode) {
-		log.Printf("Got status code %d instead of wanted %d\nUrl : %s", resp.StatusCode, fp.WantErrCodes, fp.Url)
-		panic("Failed to get wanted status code.")
+		log.Printf("Got status code %d instead of wanted %v\nUrl : %s", resp.StatusCode, fp.WantErrCodes, fp.Url)
+		return nil, errors.New("failed to get wanted status code")
 	}
 
-	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Failed to read body from request response.")
-		panic(err)
+		return nil, err
 	}
 
-	return body
+	return body, nil
 }

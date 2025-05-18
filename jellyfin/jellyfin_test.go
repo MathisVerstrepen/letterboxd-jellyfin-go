@@ -16,9 +16,9 @@ type MockClient struct {
 	mock.Mock
 }
 
-func (m *MockClient) FetchData(fp f.FetcherParams) []byte {
+func (m *MockClient) FetchData(fp f.FetcherParams) ([]byte, error) {
 	args := m.Called(fp.Url)
-	return args.Get(0).([]byte)
+	return args.Get(0).([]byte), args.Error(1)
 }
 
 // Get info of the current directory of the executed file

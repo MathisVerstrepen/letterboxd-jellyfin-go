@@ -40,7 +40,7 @@ type RadarrStatus struct {
 }
 
 func GetRadarrState(client f.FetcherClient, tmdbId string) (RadarrStatus, error) {
-	body := client.FetchData(f.FetcherParams{
+	body, err := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    RadarrUrl + "movie/lookup",
 		Body:   nil,
@@ -52,8 +52,13 @@ func GetRadarrState(client f.FetcherClient, tmdbId string) (RadarrStatus, error)
 		},
 	})
 
+	if err != nil {
+		log.Printf("Failed to get movie from Radarr: %v", err)
+		return RadarrStatus{}, err
+	}
+
 	parsedBody := []RadarrMovieLookupResp{}
-	err := json.Unmarshal(body, &parsedBody)
+	err = json.Unmarshal(body, &parsedBody)
 	if err != nil {
 		log.Println("Failed to parse JSON.")
 		panic(err)

@@ -22,12 +22,16 @@ type LetterboxdScrapper struct {
 }
 
 func (ls LetterboxdScrapper) letterboxdGetFetcher(endpoint string) (*html.Node, error) {
-
-	body := ls.Client.FetchData(f.FetcherParams{
+	body, err := ls.Client.FetchData(f.FetcherParams{
 		Method:   "GET",
 		Url:      endpoint,
 		UseProxy: true,
 	})
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
 
 	parsedBody, err := html.Parse(strings.NewReader(string(body)))
 

@@ -19,7 +19,7 @@ type User struct {
 const JellyfinUrl = "https://stream.diikstra.fr/"
 
 func GetUsers(client f.FetcherClient) []User {
-	body := client.FetchData(f.FetcherParams{
+	body, err := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    JellyfinUrl + "Users",
 		Body:   nil,
@@ -31,6 +31,11 @@ func GetUsers(client f.FetcherClient) []User {
 		},
 		UseProxy: false,
 	})
+
+	if err != nil {
+		log.Printf("Failed to get users from Jellyfin: %v", err)
+		return nil
+	}
 
 	var users []User
 	json.Unmarshal(body, &users)
@@ -71,7 +76,7 @@ type ReqUserViewWrapper struct {
 }
 
 func GetUserViews(client f.FetcherClient, userId string, userCollectionId string) ([]UserView, error) {
-	body := client.FetchData(f.FetcherParams{
+	body, err := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    JellyfinUrl + "Items",
 		Body:   nil,
@@ -87,6 +92,11 @@ func GetUserViews(client f.FetcherClient, userId string, userCollectionId string
 			"userId":           userId,
 		},
 	})
+
+	if err != nil {
+		log.Printf("Failed to get user %s views in collection %s: %v", userId, userCollectionId, err)
+		return nil, err
+	}
 
 	var userView ReqUserViewWrapper
 	json.Unmarshal(body, &userView)
@@ -138,7 +148,7 @@ type Movies struct {
 }
 
 func GetAllMovies(client f.FetcherClient) *[]MoviesItem {
-	body := client.FetchData(f.FetcherParams{
+	body, err := client.FetchData(f.FetcherParams{
 		Method: "GET",
 		Url:    JellyfinUrl + "Items",
 		Body:   nil,
@@ -153,6 +163,11 @@ func GetAllMovies(client f.FetcherClient) *[]MoviesItem {
 		},
 		UseProxy: false,
 	})
+
+	if err != nil {
+		log.Printf("Failed to get all movies from Jellyfin: %v", err)
+		return nil
+	}
 
 	var res Movies
 	json.Unmarshal(body, &res)

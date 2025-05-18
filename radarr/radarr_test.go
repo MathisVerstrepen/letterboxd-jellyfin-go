@@ -19,9 +19,9 @@ type MockClient struct {
 	mock.Mock
 }
 
-func (m *MockClient) FetchData(fp f.FetcherParams) []byte {
+func (m *MockClient) FetchData(fp f.FetcherParams) ([]byte, error) {
 	args := m.Called(fp.Url)
-	return args.Get(0).([]byte)
+	return args.Get(0).([]byte), args.Error(1)
 }
 
 // Get info of the current directory of the executed file
@@ -113,7 +113,11 @@ func TestGetRadarrState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient := new(MockClient)
 			mockClient.On("FetchData", mock.Anything).Return(tt.clientResponse, nil)
-			if got := GetRadarrState(mockClient, tt.args.tmdbId); !reflect.DeepEqual(got, tt.want) {
+			got, err := GetRadarrState(mockClient, tt.args.tmdbId)
+			if err != nil {
+				t.Errorf("GetRadarrState() returned error: %v", err)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetRadarrState() = %v, want %v", got, tt.want)
 			}
 		})
